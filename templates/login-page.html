@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <script 
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+        </script>
+    </head>
+    <body>
+        <p>Connectez-vous ou créez un compte</p>
+        <form action="" method="post">
+            <label for="fname">Nom utilisateur</label><br>
+            <input type="text" id="username" name="username" placeholder="Nom d'utilisateur" value="{{ request.form.username }}"><br>
+            <label for="lname">Mot de passe:</label><br>
+            <input type="password" id="password" name="password" placeholder="Mot de passe" value="{{ request.form.password }}"><br><br>
+            <input id="submit" type="submit" value="Connexion">
+        </form>
+        <form action="/create-account">
+            <input type="submit" value="Créer un compte" />
+        </form>
+    </body>
+</html>

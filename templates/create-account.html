@@ -1,0 +1,20 @@
+<html>
+
+<head>
+    
+</head>
+
+<body>
+    <p>Rentrez les informations de votre compte</p>
+    <form action="" method="post">
+        <label for="mail">Mail</label><br> 
+        <input type="text" id="mail" name="mail" placeholder="Mail" value="{{ request.form.mail }}"><br>
+        <label for="pseudo">Pseudo:</label><br>
+        <input type="text" id="pseudo" name="pseudo" placeholder="Pseudonyme" value="{{ request.form.pseudo }}"><br>
+        <label for="pwd">Mot de passe:</label><br>
+        <input type="text" id="pwd" name="pwd" value="{{ request.form.pwd }}"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+
+</html>
