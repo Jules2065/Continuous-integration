@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <script 
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+
+            
+        </script>
+    </head>
+    <style>
+        table,
+        td {
+            border: 1px solid #333;
+        }
+
+        thead,
+        tfoot {
+            background-color: #fff;
+            color: #333;
+        }
+    </style>
+    <body>
+        
+        <p>Page de l'utilisateur</p>
+        <p>{{info}}</p>
+        <button onclick="list_users()">Lister les utilisateurs sans groupe</button>
+        <button onclick="inv_link()">Créer lien d'invitation</button>
+        <button onclick="place_random()">Placement dans un groupe aléatoire</button><br>
+        <table> </table>
+    </body>
+    <script>
+        let mountains = JSON.parse('{{tab | tojson}}');
+        function generateTableHead(table, data) {
+        let thead = table.createTHead();
+        let row = thead.insertRow();
+        for (let key of data) {
+            let th = document.createElement("th");
+            let text = document.createTextNode(key);
+            th.appendChild(text);
+            row.appendChild(th);
+        }
+        }
+
+        function generateTable(table, data) {
+        for (let element of data) {
+            let row = table.insertRow();
+            for (key in element) {
+            let cell = row.insertCell();
+            let text = document.createTextNode(element[key]);
+            cell.appendChild(text);
+            }
+        }
+        }
+
+        let table = document.querySelector("table");
+        let data = Object.keys(mountains[0]);
+        generateTableHead(table, data);
+        generateTable(table, mountains);
+        
+    </script>
+</html>

@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <script 
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+        </script>
+    </head>
+    <body>
+        <p>Mode administrateur</p>
+        <form action="" method="post">
+            <label for="group">Nombre de groupes</label><br>
+            <input type="number" id="group" name="group" placeholder="0" value="{{ request.form.group }}"><br>
+            <label for="user">Nombre d'utilisateurs</label><br>
+            <input type="number" id="user" name="user" placeholder="0" value="{{ request.form.user }}"><br>
+            <label for="user">Last_min</label><br>
+            <input type="radio" id="lastmin" name="last" value="lastmin"
+                    checked>
+            <label for="lastmin">Last_min</label><br>
+            <input type="radio" id="lastmax" name="last" value="lastmax">
+            <label for="lastmax">Last_max</label><br><br>
+            <input id="submit" type="submit" value="Appliquer">
+        </form><br>
+        <p>{{info}}</p>
+    </body>
+</html>
