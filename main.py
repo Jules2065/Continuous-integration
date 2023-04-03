@@ -2,11 +2,13 @@ from flask import *
 import time
 import threading
 import traceback
-from gestion_bdd import SqlLogger
 from math import floor, ceil
 from time import sleep
+from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 
 app = Flask(__name__)
+app.secret_key = 'BAD_SECRET_KEY'
+
 
 USERS = ["Tata", "Toto", "Jules", "Idir", "Roger", "Natalie", "Bastien", "Sebastien", "Emilie", "Emile"]
 
@@ -32,7 +34,6 @@ class User():
         self.group = group
 
 
-
 for user in USERS:
     user_list.append(User(user, "Sans groupe"))
 
@@ -40,8 +41,10 @@ for user in USERS:
 
 @app.route("/login-page/", methods=['GET', 'POST'])
 def login_page():
+    url_for('invite', group_name="tata")
     global user_list
     if request.method == 'POST':
+        session["user"] = request.form['username']
         if request.form['username'] == 'admin':
             #connexion comme utilisateur admin
             return redirect(url_for('main_page_admin'))
@@ -49,7 +52,7 @@ def login_page():
             #connexion comme utilisateur normal
             if request.form['username'] not in USERS:
                 USERS.append(request.form['username'])
-                user_list.append(User(request.form['username'], None))
+                user_list.append(User(request.form['username'], "Sans groupe"))
             return redirect(url_for('main_page_user'))
     return render_template('login-page.html')
 
@@ -82,10 +85,8 @@ def main_page_admin():
     group_list.clear()
     info = calcul_group_user()
 
-    for i in range(true_nbr_group):
-        group_list.append(Group(f"Groupe {i+1}"))
     group_list.append(Group("Sans groupe"))
-    return render_template('main-page-admin.html', info=info)
+    return render_template('main-page-admin.html', info=session["user"])
 
 @app.route("/main-page-user/", methods=['GET', 'POST'])
 def main_page_user():
@@ -95,7 +96,6 @@ def main_page_user():
 
     
     #Création d'un tableau de dictionnaire pour afficher les groupes sur le site
-    print(len(group_list))
     tab = []
     for user in user_list:
         dico = {}
@@ -103,12 +103,10 @@ def main_page_user():
             dico[group.name] = ""
             if user.group == group.name:
                 dico[group.name] = user.name
-        print("dico")
         tab.append(dico)
 
-    print(tab)
     
-    return render_template('main-page-user.html', info=info, tab=tab)
+    return render_template('main-page-user.html', info=session["user"], tab=tab)
 
 
 
@@ -163,9 +161,12 @@ def calcul_group_user():
                     user_group = max_nbr_user_group
                     user_group_spe = nbr_user - ((nbr_group-1) * (max_nbr_user_group))
     return info
+
+@app.route('/<variable>/invite', methods=['GET', 'POST'])
+def add(group_name):
+    print("Groupe name :", group_name)
+    return redirect(url_for('main_page_user'))
+
+
 info = calcul_group_user()
-print("info :", info)
-print('true_nbr_group :', true_nbr_group)
-for i in range(true_nbr_group):
-    group_list.append(Group(f"Groupe {i+1}"))
 group_list.append(Group("Sans groupe"))
