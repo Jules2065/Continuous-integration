@@ -5,6 +5,7 @@ import traceback
 from math import floor, ceil
 from time import sleep
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+from random import choice
 
 app = Flask(__name__)
 app.secret_key = 'BAD_SECRET_KEY'
@@ -21,11 +22,24 @@ user_list = []
 true_nbr_group = 5
 user_group = 4
 user_group_spe = 5
+link_invite=""
+erreur=""
 
 
 class Group():
-    def __init__(self, name) -> None:
+    def __init__(self, name, number, max_user_number) -> None:
         self.name = name
+        self.number = number
+        self.nbr_user = 0
+        self.max_user_number = max_user_number
+
+    def groupFull(self):
+        if self.nbr_user < self.max_user_number:
+            return True
+        return False
+                
+
+
 
 
 class User():
@@ -41,7 +55,6 @@ for user in USERS:
 
 @app.route("/login-page/", methods=['GET', 'POST'])
 def login_page():
-    url_for('invite', group_name="tata")
     global user_list
     if request.method == 'POST':
         session["user"] = request.form['username']
@@ -85,13 +98,15 @@ def main_page_admin():
     group_list.clear()
     info = calcul_group_user()
 
-    group_list.append(Group("Sans groupe"))
+    group_list.append(Group("Sans groupe", 0, 0))
     return render_template('main-page-admin.html', info=session["user"])
 
 @app.route("/main-page-user/", methods=['GET', 'POST'])
 def main_page_user():
     global user_list
     global group_list
+    global erreur
+    global link_invite
     info = calcul_group_user()
 
     
@@ -100,13 +115,13 @@ def main_page_user():
     for user in user_list:
         dico = {}
         for group in group_list:
-            dico[group.name] = ""
+            dico[group.name] = "" 
             if user.group == group.name:
                 dico[group.name] = user.name
         tab.append(dico)
 
     
-    return render_template('main-page-user.html', info=session["user"], tab=tab)
+    return render_template('main-page-user.html', info=session["user"], tab=tab, link_invite=link_invite, erreur=erreur)
 
 
 
@@ -162,11 +177,100 @@ def calcul_group_user():
                     user_group_spe = nbr_user - ((nbr_group-1) * (max_nbr_user_group))
     return info
 
-@app.route('/<variable>/invite', methods=['GET', 'POST'])
-def add(group_name):
+@app.route("/place-random/", methods=['GET', 'POST'])
+def place_random():
+    global link_invite
+    global group_list
+    global true_nbr_group
+    global erreur
+    groupes_possibles = []
+    if len(group_list) > 1:
+        user_inst = None
+        group_inst = None
+        for user in user_list:
+            if session["user"] == user.name:
+                user_inst = user
+        #Déterminer quels groupes peuvent être pris puis lancer un random entre tous
+        for group in group_list:
+            if not group.groupFull():
+                groupes_possibles.append(group)
+        chosen_group = choice(groupes_possibles)
+        print("rand :", chosen_group)
+        if user_inst.group == "Sans groupe":
+            chosen_group.nbr_user += 1
+            user_inst.group = chosen_group.name
+        else:
+            erreur = "Vous appartenez déjà à un groupe"   
+    else:
+        erreur = "Aucun groupe n'a été créé"     
+    return redirect(url_for('main_page_user'))
+
+@app.route("/create-invite/", methods=['GET', 'POST'])
+def create_invite():
+    global link_invite
+    global group_list
+    global true_nbr_group
+    global erreur
+    global user_group
+    global user_group_spe
+    
+    if len(group_list) < true_nbr_group:
+        user_inst = None
+        for user in user_list:
+            if session["user"] == user.name:
+                user_inst = user
+        if user_inst.group == "Sans groupe":
+            group_nbr_user = user_group
+            #Vérifie si le groupe est le dernier
+            if len(group_list) == true_nbr_group-1:
+                group_nbr_user = user_group_spe
+            group_name = f"Groupe {len(group_list)}"
+            group_list.append(Group(group_name, len(group_list)), group_nbr_user)
+            group_list[-1].nbr_user += 1
+            user_inst.group = group_list[-1].name
+            url_for('invite', group_name=group_name)
+            link_invite=f"localhost:5000/{group_name}/invite"
+        else:
+            erreur = "Vous appartenez déjà à un groupe"
+        
+    return redirect(url_for('main_page_user'))
+
+@app.route('/<group_name>/invite', methods=['GET', 'POST'])
+def invite(group_name):
+    global group_list
+    global user_list
+    global erreur
+    global last_min
+    global user_group
+    global user_group_spe
+    global true_nbr_group
     print("Groupe name :", group_name)
+    user_inst = None
+    for user in user_list:
+        if session["user"] == user.name:
+            user_inst = user
+    if user_inst.group == "Sans groupe":
+        for group in group_list:
+            if group.name == group_name:
+                max_nbr_user = 0
+                if group.number == true_nbr_group:
+                    max_nbr_user = user_group_spe
+                else:
+                    max_nbr_user = user_group
+                
+                if group.nbr_user < max_nbr_user:
+                    group.nbr_user += 1
+                    user_inst.group = group.name
+
+                
+                else:
+                    erreur = f"Impossible de rejoindre le groupe {group_name} : Il est complet."
+    else:
+        erreur = "Vous appartenez déjà à un groupe"
+                
+            
     return redirect(url_for('main_page_user'))
 
 
 info = calcul_group_user()
-group_list.append(Group("Sans groupe"))
+group_list.append(Group("Sans groupe", 0))
