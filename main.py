@@ -96,7 +96,7 @@ def main_page_admin():
         else:
             last_min = False
     group_list.clear()
-    info = calcul_group_user()
+    calcul_group_user(nbr_group, nbr_user, last_min)
 
     group_list.append(Group("Sans groupe", 0, 0))
     return render_template('main-page-admin.html', info=session["user"])
@@ -107,7 +107,10 @@ def main_page_user():
     global group_list
     global erreur
     global link_invite
-    info = calcul_group_user()
+    global nbr_group
+    global nbr_user
+    global last_min
+    info = calcul_group_user(nbr_group, nbr_user, last_min)
 
     
     #Création d'un tableau de dictionnaire pour afficher les groupes sur le site
@@ -126,10 +129,7 @@ def main_page_user():
 
 
 
-def calcul_group_user():
-    global nbr_group
-    global nbr_user
-    global last_min
+def calcul_group_user(nbr_group, nbr_user, last_min):
     global true_nbr_group
     global user_group
     global user_group_spe
@@ -244,6 +244,8 @@ def invite(group_name):
     global user_group
     global user_group_spe
     global true_nbr_group
+    global nbr_group
+    global nbr_user
     print("Groupe name :", group_name)
     user_inst = None
     for user in user_list:
@@ -272,5 +274,5 @@ def invite(group_name):
     return redirect(url_for('main_page_user'))
 
 
-info = calcul_group_user()
-group_list.append(Group("Sans groupe", 0))
+info = calcul_group_user(nbr_group, nbr_user, last_min)
+group_list.append(Group("Sans groupe", 0, 0))
